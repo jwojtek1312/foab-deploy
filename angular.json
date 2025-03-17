@@ -25,9 +25,12 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "./node_modules/materialize-css/dist/css/materialize.css"
             ],
-            "scripts": [],
+            "scripts": [
+              "./node_modules/materialize-css/dist/js/materialize.js"
+            ],
             "server": "src/main.server.ts",
             "prerender": true,
             "ssr": {
@@ -86,7 +89,8 @@
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/favico-forklift.png"
             ],
             "styles": [
               "src/styles.css"
@@ -99,5 +103,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "4a5aa775-e3ad-4cd0-ac66-c30bd58ad38e"
   }
 }
