@@ -1,0 +1,8 @@
+# GitHub Pages (Jekyll) settings. The site is plain static files; this only keeps
+# internal files from being published as pages (e.g. foab.rs/README.html).
+exclude:
+  - README.md
+  - CLAUDE.md
+  - docs
+  - tests
+  - tools

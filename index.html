@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>document.documentElement.classList.add("js")</script>
-  <title>FOAB – servis viljuškara na vašoj lokaciji, širom Srbije</title>
-  <meta name="description" content="FOAB je porodična firma sa 15+ godina iskustva: servis i popravka viljuškara i paletara na vašoj lokaciji širom Srbije, iznajmljivanje viljuškara, popravka traktora i hidraulike.">
+  <title>FOAB – servis viljuškara i paletara na vašoj lokaciji, širom Srbije</title>
+  <meta name="description" content="Porodična firma sa 15+ godina iskustva. Servis i popravka viljuškara i paletara na vašoj lokaciji širom Srbije, iznajmljivanje viljuškara, popravka traktora i hidraulike.">
   <link rel="canonical" href="https://foab.rs/">
   <link rel="alternate" hreflang="sr" href="https://foab.rs/">
   <link rel="alternate" hreflang="en" href="https://foab.rs/en/">
@@ -16,6 +16,11 @@
   <meta property="og:title" content="FOAB – servis viljuškara širom Srbije">
   <meta property="og:description" content="Porodična firma sa 15+ godina iskustva. Dolazimo na vašu lokaciju. Pozovite 064 119 6048.">
   <meta property="og:image" content="https://foab.rs/img/brand/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="FOAB – servis viljuškara širom Srbije, 064 119 6048">
+  <meta property="og:site_name" content="FOAB">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#111111">
   <link rel="icon" href="/img/brand/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/img/brand/favicon-32.png" sizes="32x32" type="image/png">
@@ -26,6 +31,7 @@
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    "@id": "https://foab.rs/#business",
     "name": "FOAB",
     "description": "Servis i popravka viljuškara i paletara na lokaciji klijenta, iznajmljivanje viljuškara, popravka traktora i hidraulike.",
     "url": "https://foab.rs/",
@@ -40,7 +46,32 @@
       "postalCode": "22324",
       "addressCountry": "RS"
     },
-    "areaServed": "Serbia"
+    "areaServed": "Serbia",
+    "knowsLanguage": ["sr", "en"],
+    "makesOffer": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Servis viljuškara i paletara",
+          "description": "Popravka, dijagnostika i održavanje viljuškara i paletara na lokaciji klijenta; veće popravke u radionici uz transport."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Iznajmljivanje viljuškara"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Popravka traktora i hidraulike"
+        }
+      }
+    ]
   }
   </script>
 </head>
@@ -139,7 +170,7 @@
           <p class="kicker kicker-dark">O nama</p>
           <h2>Porodična firma sa 15+ godina iskustva</h2>
           <!-- TODO(owner): replace with the family story (who founded FOAB, when, how it started) -->
-          <p>FOAB je porodična firma koja se više od 15 godina bavi servisom viljuškara. Radimo sa industrijskim firmama i magacinima širom Srbije, a veliki deo klijenata došao nam je preporukom.</p>
+          <p>FOAB je porodična firma koja se više od 15 godina bavi servisom viljuškara. Radionica nam je u Beški, između Novog Sada i Beograda, a radimo sa industrijskim firmama i magacinima širom Srbije. Veliki deo klijenata došao nam je preporukom.</p>
           <p>Kod nas razgovarate direktno sa ljudima koji popravljaju vaše mašine.</p>
           <ul class="facts">
             <li><svg class="icon"><use href="#i-shield"/></svg><strong>15+ godina</strong><span>iskustva u servisu viljuškara</span></li>
@@ -163,7 +194,7 @@
           <ul class="contact-list">
             <li><svg class="icon"><use href="#i-mail"/></svg><a href="mailto:foab.nesa@gmail.com">foab.nesa@gmail.com</a></li>
             <li><svg class="icon"><use href="#i-pin"/></svg><span>Radionica: Cara Dušana 58, 22324 Beška</span></li>
-            <li><svg class="icon"><use href="#i-map"/></svg><span>Izlazimo na teren u celoj Srbiji</span></li>
+            <li><svg class="icon"><use href="#i-map"/></svg><span>Izlazimo na teren u celoj Srbiji – Novi Sad, Beograd, Inđija, Stara Pazova, Ruma i dalje</span></li>
             <li><svg class="icon"><use href="#i-clock"/></svg><span>Radno vreme: 8–18 h</span></li>
           </ul>
         </div>
@@ -173,7 +204,8 @@
           <form id="contact-form" class="contact-form" action="https://api.web3forms.com/submit" method="POST"
                 data-msg-sending="Šaljem…"
                 data-msg-success="Hvala! Poruka je poslata, javićemo vam se uskoro."
-                data-msg-error="Poruka nije poslata. Pokušajte ponovo ili nas pozovite na 064 119 6048.">
+                data-msg-error="Poruka nije poslata. Pokušajte ponovo ili nas pozovite na 064 119 6048."
+                data-msg-captcha="Potvrdite da niste robot (polje iznad dugmeta), pa pošaljite ponovo.">
             <input type="hidden" name="access_key" value="0ffe675e-1961-474c-b6b7-e6931ef29d6a">
             <input type="hidden" name="subject" value="Novi upit sa sajta foab.rs">
             <input type="hidden" name="from_name" value="FOAB sajt">
@@ -197,6 +229,8 @@
               <label for="f-poruka">Poruka</label>
               <textarea id="f-poruka" name="poruka" rows="5" required placeholder="Koji viljuškar, šta se dešava, gde se nalazite…"></textarea>
             </div>
+            <div class="h-captcha" data-sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2" data-theme="dark"></div>
+            <noscript><p class="form-note">Za slanje poruke potreban je JavaScript. Pozovite nas na <a href="tel:+381641196048">064 119 6048</a> ili pišite na <a href="mailto:foab.nesa@gmail.com">foab.nesa@gmail.com</a>.</p></noscript>
             <button class="btn btn-yellow btn-lg" type="submit">Pošalji upit</button>
             <p class="form-status" role="status" aria-live="polite"></p>
           </form>
@@ -228,5 +262,6 @@
   </footer>
 
   <a class="call-bar" href="tel:+381641196048"><svg class="icon"><use href="#i-phone"/></svg>Pozovite: 064 119 6048</a>
+  <script src="https://js.hcaptcha.com/1/api.js?recaptchacompat=off&amp;hl=sr" async defer></script>
 </body>
 </html>

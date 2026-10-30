@@ -118,7 +118,7 @@ MAP_SRC = ("https://www.google.com/maps/embed/v1/place?key=AIzaSyAg0Ia7fjTQmBfxA
            "&q=Cara+Du%C5%A1ana+58%2C+22324+Be%C5%A1ka%2C+Serbia")
 SECTIONS = ["usluge", "o-nama", "kontakt"]
 FIELDS = {"ime": True, "firma": False, "kontakt": True, "poruka": True}
-HTML_PAGES = ["index.html", "hvala.html", "en/index.html", "en/thank-you.html"]
+HTML_PAGES = ["index.html", "hvala.html", "en/index.html", "en/thank-you.html", "404.html"]
 
 
 def meta(doc, **attrs):
@@ -372,6 +372,87 @@ def test_working_hours():
         src = load(rel)
         check(text in src, f"{rel}: working hours {text!r} missing")
         check("TODO(owner): add working hours" not in src, f"{rel}: stale working-hours TODO")
+
+
+HCAPTCHA_SITEKEY = "50b2fe65-b00b-4b9e-ad62-3ba471098be2"  # Web3Forms' shared free-plan key
+
+
+def test_form_has_hcaptcha():
+    for rel, lang in (("index.html", "sr"), ("en/index.html", "en")):
+        d = parse(rel)
+        widget = d.has_class("h-captcha")
+        check(widget, f"{rel}: hCaptcha widget missing")
+        check(widget[0]["attrs"].get("data-sitekey") == HCAPTCHA_SITEKEY, f"{rel}: wrong hCaptcha sitekey")
+        src = load(rel)
+        form = src[src.index('id="contact-form"'):src.index("</form>")]
+        check('class="h-captcha"' in form, f"{rel}: hCaptcha widget must be inside the form")
+        check(form.index('class="h-captcha"') < form.index('type="submit"'), f"{rel}: widget must come before the submit button")
+        check(f'src="https://js.hcaptcha.com/1/api.js?recaptchacompat=off&amp;hl={lang}"' in src, f"{rel}: hCaptcha script (hl={lang}) missing")
+        check(form_attr(d, "data-msg-captcha"), f"{rel}: data-msg-captcha missing")
+        check("<noscript>" in form, f"{rel}: form needs a <noscript> note (captcha needs JS)")
+
+
+def form_attr(doc, name):
+    return doc.find("form", id="contact-form")["attrs"].get(name)
+
+
+CITIES = {"index.html": ["Novi Sad", "Beograd", "Inđija", "Stara Pazova", "Ruma"],
+          "en/index.html": ["Novi Sad", "Belgrade", "Inđija", "Stara Pazova", "Ruma"]}
+
+
+def test_local_search_terms():
+    for rel, cities in CITIES.items():
+        d = parse(rel)
+        text = d.find("main")["text"]
+        for city in cities:
+            check(city in text, f"{rel}: visible text should mention {city}")
+    sr = parse("index.html")
+    check("paletar" in sr.find("title")["text"].lower(), "SR title should mention paletari")
+    check("paletar" in meta(sr, name="description").lower(), "SR description should mention paletari")
+
+
+def test_jsonld_services():
+    for rel in ("index.html", "en/index.html"):
+        data = json.loads(parse(rel).find("script", type="application/ld+json")["text"])
+        offers = data.get("makesOffer", [])
+        check(len(offers) == 3, f"{rel}: makesOffer should list the 3 services")
+        check(all(o["@type"] == "Offer" and o["itemOffered"]["@type"] == "Service" and o["itemOffered"]["name"] for o in offers),
+              f"{rel}: each offer needs an itemOffered Service with a name")
+        check(data.get("@id") == "https://foab.rs/#business", f"{rel}: stable @id missing")
+
+
+def test_social_meta():
+    for rel in ("index.html", "en/index.html"):
+        d = parse(rel)
+        check(meta(d, property="og:site_name") == "FOAB", f"{rel}: og:site_name")
+        check(meta(d, property="og:image:width") == "1200" and meta(d, property="og:image:height") == "630", f"{rel}: og:image size")
+        check(meta(d, property="og:image:alt"), f"{rel}: og:image:alt")
+        check(meta(d, name="twitter:card") == "summary_large_image", f"{rel}: twitter:card")
+
+
+def test_internal_files_not_published():
+    cfg = load("_config.yml")
+    for item in ("README.md", "CLAUDE.md", "docs", "tests", "tools"):
+        check(re.search(rf"^\s*-\s*{re.escape(item)}\s*$", cfg, re.M), f"_config.yml must exclude {item}")
+
+
+def test_root_favicon_ico():
+    from PIL import Image
+    with Image.open(path("favicon.ico")) as im:
+        check(im.format == "ICO", "favicon.ico is not an ICO file")
+        check((32, 32) in im.info.get("sizes", set()), "favicon.ico should include 32x32")
+
+
+def test_404_page():
+    d = parse("404.html")
+    check(meta(d, name="robots") == "noindex", "404 must be noindex")
+    check(d.find("a", href="/") and d.find("a", href="/en/"), "404 must link to both homepages")
+    check(d.find("a", href=TEL), "404 must offer the phone number")
+    for el in d.elements:
+        for attr in ("src", "href"):
+            url = el["attrs"].get(attr, "")
+            if url and not url.startswith(("/", "http", "mailto:", "tel:", "#")):
+                raise AssertionError(f"404.html: relative {attr}={url} breaks on nested URLs")
 
 
 def test_assets_resolve():

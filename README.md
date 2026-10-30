@@ -38,6 +38,8 @@ The form sends messages to **foab.nesa@gmail.com** through [Web3Forms](https://w
 
 After going live, send a test message from the site in each language and check that it arrives. To change the recipient, create a new key at web3forms.com and replace it in both pages.
 
+**Spam protection:** hCaptcha is turned on in the Web3Forms dashboard. With it on, Web3Forms rejects any message that doesn't include a solved captcha, including bots that post straight to the API with the public key. The widget uses Web3Forms' free shared site key, loaded straight from hCaptcha. If you ever turn hCaptcha off in the dashboard, also remove the `h-captcha` div and the hCaptcha `<script>` from both pages. If you leave the widget in, visitors still have to solve a captcha that does nothing.
+
 ## Google Maps key
 
 The map uses the Maps Embed API, which is free. Its key is visible in the HTML, so it should only work on your domain. In Google Cloud Console → **APIs & Services → Credentials**, open the key and set:
@@ -46,6 +48,14 @@ The map uses the Maps Embed API, which is free. Its key is visible in the HTML, 
 - **API restrictions:** Maps Embed API only
 
 The current key is restricted to foab.rs. That's why the map is blank in a local preview.
+
+## Search engines
+
+The pages already describe FOAB and its three services in a format search engines read. `sitemap.xml` and `robots.txt` are in place, and `_config.yml` stops GitHub Pages from publishing this README and the other internal files. What's left happens outside the code:
+
+1. **Google Search Console** (https://search.google.com/search-console): add the domain `foab.rs`, verify it with the DNS TXT record Google gives you, then go to **Sitemaps** and submit `https://foab.rs/sitemap.xml`.
+2. **Google Business Profile** (https://business.google.com): this is what puts FOAB on Google Maps and in local search results. Set it up as a service-area business covering Serbia, add the phone number and `https://foab.rs`, and ask longtime clients for reviews. Once the profile exists, add its link to `sameAs` in the business details block (the `application/ld+json` script) of both pages.
+3. **Bing Webmaster Tools** (optional): it can import everything from Search Console in one click.
 
 ## Swapping in real photos
 

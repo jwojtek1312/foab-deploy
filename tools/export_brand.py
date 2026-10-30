@@ -164,7 +164,18 @@ def write_pngs():
         im.convert("RGB").save(os.path.join(OUT, "og-image.png"))
 
 
+def write_ico():
+    # Some crawlers and old browsers request /favicon.ico regardless of <link rel="icon">.
+    favicon = open(os.path.join(OUT, "favicon.svg"), encoding="utf-8").read()
+    big = os.path.join(OUT, ".favicon-256.png")
+    screenshot(page(f'<div style="width:256px;height:256px">{favicon.replace("<svg ", "<svg width=256 height=256 ")}</div>'), 256, 256, big)
+    with Image.open(big) as im:
+        im.convert("RGBA").save(os.path.join(ROOT, "favicon.ico"), sizes=[(16, 16), (32, 32), (48, 48)])
+    os.unlink(big)
+
+
 if __name__ == "__main__":
     write_svgs()
     write_pngs()
+    write_ico()
     print("wrote", ", ".join(sorted(os.listdir(OUT))))
