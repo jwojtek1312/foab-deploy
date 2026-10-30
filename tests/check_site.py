@@ -303,6 +303,70 @@ def test_robots_sitemap():
     xml.dom.minidom.parseString(sm)  # must be well-formed
 
 
+def _luminance(hex_color):
+    rgb = [int(hex_color.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def contrast(a, b):
+    la, lb = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def css_var(name):
+    m = re.search(rf"--{name}:\s*(#[0-9a-fA-F]{{6}})", load("css/style.css"))
+    check(m, f"--{name} not defined as a 6-digit hex")
+    return m.group(1)
+
+
+def test_dark_kicker_contrast():
+    # Small bold kicker text on sand/white must meet WCAG AA (4.5:1).
+    for bg in ("sand", "white"):
+        ratio = contrast(css_var("yellow-dark"), css_var(bg))
+        check(ratio >= 4.5, f"--yellow-dark on --{bg} is {ratio:.2f}:1, needs 4.5:1")
+
+
+def test_form_anchor_clears_sticky_header():
+    css = load("css/style.css")
+    check(re.search(r"#upit[^{]*\{[^}]*scroll-margin-top", css), "#upit needs scroll-margin-top (sticky header covers it)")
+
+
+def test_no_unconfirmed_claims():
+    for rel in ("index.html", "en/index.html"):
+        low = load(rel).lower()
+        for claim in ("hitn", "emergency"):
+            check(claim not in low, f"{rel}: unconfirmed claim {claim!r}")
+
+
+def test_forklift_photo_alt_matches_photo():
+    # The placeholder shows forklifts being driven, not repaired.
+    for rel in ("index.html", "en/index.html"):
+        img = parse(rel).find("img", src="/img/service-forklift.webp")
+        alt = img["attrs"]["alt"].lower()
+        check("popravlja" not in alt and "repair" not in alt, f"{rel}: alt {alt!r} describes a repair the photo doesn't show")
+
+
+def test_js_class_set_before_paint():
+    # Avoid the phone menu flashing open: html.js must be set by an inline head script, before the stylesheet.
+    for rel in ("index.html", "en/index.html"):
+        head = load(rel).split("</head>")[0]
+        inline = re.search(r"<script>[^<]*classList\.add\(['\"]js['\"]\)[^<]*</script>", head)
+        check(inline, f"{rel}: inline html.js script missing in <head>")
+        check(inline.start() < head.index('rel="stylesheet"'), f"{rel}: html.js script must come before the stylesheet")
+
+
+def test_photo_credits_licence_links():
+    for rel in ("index.html", "en/index.html"):
+        src = load(rel)
+        block = src[src.index('class="photo-credits"'):]
+        block = block[:block.index("</p>")]
+        for lic in ("by-sa/3.0", "by-sa/4.0", "by/2.0"):
+            check(f"https://creativecommons.org/licenses/{lic}/" in block, f"{rel}: credits must link licence {lic}")
+        check(("izmenjen" in block) if rel == "index.html" else ("modified" in block or "cropped" in block),
+              f"{rel}: credits must say the photos were modified (cropped/resized)")
+
+
 def test_assets_resolve():
     for rel in HTML_PAGES:
         d = parse(rel)

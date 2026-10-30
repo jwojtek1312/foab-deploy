@@ -5,7 +5,7 @@
   --ink-2: #1c1c1c;
   --ink-3: #2a2a2a;
   --yellow: #F5B91B;
-  --yellow-dark: #a87b00; /* yellow-family text on light backgrounds (contrast-safe) */
+  --yellow-dark: #7a5900; /* yellow-family text on light backgrounds: >= 4.5:1 on sand and white */
   --sand: #f4f3ef;
   --white: #ffffff;
   --text: #1a1a1a;
@@ -139,6 +139,7 @@ p { margin: 0 0 1em; }
 
 /* ---------- sections ---------- */
 .section { padding: clamp(56px, 8vw, 96px) 0; scroll-margin-top: calc(var(--header-h) + 6px); }
+#upit { scroll-margin-top: calc(var(--header-h) + 12px); }
 .section-sand { background: var(--sand); }
 .section-dark { background: var(--ink); color: var(--white); }
 .section-dark::before { content: ""; display: block; height: 10px; background: var(--stripes); margin-top: calc(-1 * clamp(56px, 8vw, 96px)); margin-bottom: clamp(56px, 8vw, 96px); }
