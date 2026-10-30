@@ -50,9 +50,18 @@ export function initForm(form, fetchImpl = (...args) => fetch(...args)) {
     if (cls) status.classList.add(cls);
   };
 
+  // hCaptcha writes its token into a textarea it injects into the widget; Web3Forms rejects
+  // submissions without one, so ask for the captcha instead of spending a request.
+  const captchaUnsolved = () =>
+    form.querySelector(".h-captcha") && !form.querySelector('[name="h-captcha-response"]')?.value;
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (sending) return;
+    if (captchaUnsolved()) {
+      show("msgCaptcha", "is-error");
+      return;
+    }
     sending = true;
     if (button) button.disabled = true;
     show("msgSending");
@@ -76,6 +85,7 @@ export function initForm(form, fetchImpl = (...args) => fetch(...args)) {
     } finally {
       sending = false;
       if (button) button.disabled = false;
+      window.hcaptcha?.reset(); // tokens are single-use, success or not
     }
   });
 }

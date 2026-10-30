@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>document.documentElement.classList.add("js")</script>
-  <title>FOAB – on-site forklift repair anywhere in Serbia</title>
+  <title>FOAB – on-site forklift and pallet truck repair anywhere in Serbia</title>
   <meta name="description" content="FOAB is a family business with 15+ years of experience: on-site forklift and pallet truck repair anywhere in Serbia, forklift rental, tractor and hydraulics repair.">
   <link rel="canonical" href="https://foab.rs/en/">
   <link rel="alternate" hreflang="sr" href="https://foab.rs/">
@@ -16,6 +16,11 @@
   <meta property="og:title" content="FOAB – forklift repair anywhere in Serbia">
   <meta property="og:description" content="Family business, 15+ years of experience. We come to you. Call +381 64 119 6048.">
   <meta property="og:image" content="https://foab.rs/img/brand/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="FOAB – forklift repair anywhere in Serbia, +381 64 119 6048">
+  <meta property="og:site_name" content="FOAB">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#111111">
   <link rel="icon" href="/img/brand/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/img/brand/favicon-32.png" sizes="32x32" type="image/png">
@@ -26,6 +31,7 @@
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    "@id": "https://foab.rs/#business",
     "name": "FOAB",
     "description": "On-site forklift and pallet truck repair, forklift rental, tractor and hydraulics repair.",
     "url": "https://foab.rs/en/",
@@ -40,7 +46,32 @@
       "postalCode": "22324",
       "addressCountry": "RS"
     },
-    "areaServed": "Serbia"
+    "areaServed": "Serbia",
+    "knowsLanguage": ["sr", "en"],
+    "makesOffer": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Forklift and pallet truck repair",
+          "description": "On-site forklift and pallet truck repair, diagnostics and maintenance; major repairs in our workshop with transport."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Forklift rental"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Tractor and hydraulics repair"
+        }
+      }
+    ]
   }
   </script>
 </head>
@@ -139,7 +170,7 @@
           <p class="kicker kicker-dark">About us</p>
           <h2>A family business with 15+ years of experience</h2>
           <!-- TODO(owner): replace with the family story (who founded FOAB, when, how it started) -->
-          <p>FOAB is a family-run company that has been repairing forklifts for more than 15 years. We work with industrial companies and warehouses all over Serbia, and many of our clients found us through recommendations.</p>
+          <p>FOAB is a family-run company that has been repairing forklifts for more than 15 years. Our workshop is in Beška, between Novi Sad and Belgrade, and we work with industrial companies and warehouses all over Serbia. Many of our clients found us through recommendations.</p>
           <p>When you call us, you talk directly to the people who fix your machines.</p>
           <ul class="facts">
             <li><svg class="icon"><use href="#i-shield"/></svg><strong>15+ years</strong><span>of forklift repair experience</span></li>
@@ -163,7 +194,7 @@
           <ul class="contact-list">
             <li><svg class="icon"><use href="#i-mail"/></svg><a href="mailto:foab.nesa@gmail.com">foab.nesa@gmail.com</a></li>
             <li><svg class="icon"><use href="#i-pin"/></svg><span>Workshop: Cara Dušana 58, 22324 Beška, Serbia</span></li>
-            <li><svg class="icon"><use href="#i-map"/></svg><span>On-site service anywhere in Serbia</span></li>
+            <li><svg class="icon"><use href="#i-map"/></svg><span>On-site service anywhere in Serbia – Novi Sad, Belgrade, Inđija, Stara Pazova, Ruma and beyond</span></li>
             <li><svg class="icon"><use href="#i-clock"/></svg><span>Working hours: 8:00–18:00</span></li>
           </ul>
         </div>
@@ -173,7 +204,8 @@
           <form id="contact-form" class="contact-form" action="https://api.web3forms.com/submit" method="POST"
                 data-msg-sending="Sending…"
                 data-msg-success="Thank you! Your message has been sent – we'll get back to you soon."
-                data-msg-error="Your message could not be sent. Please try again or call us on +381 64 119 6048.">
+                data-msg-error="Your message could not be sent. Please try again or call us on +381 64 119 6048."
+                data-msg-captcha="Please confirm you are not a robot (the box above the button), then send again.">
             <input type="hidden" name="access_key" value="0ffe675e-1961-474c-b6b7-e6931ef29d6a">
             <input type="hidden" name="subject" value="New inquiry from foab.rs">
             <input type="hidden" name="from_name" value="FOAB sajt">
@@ -197,6 +229,8 @@
               <label for="f-poruka">Message</label>
               <textarea id="f-poruka" name="poruka" rows="5" required placeholder="Which forklift, what's wrong, where are you located…"></textarea>
             </div>
+            <div class="h-captcha" data-sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2" data-theme="dark"></div>
+            <noscript><p class="form-note">Sending the form needs JavaScript. Call us on <a href="tel:+381641196048">+381 64 119 6048</a> or email <a href="mailto:foab.nesa@gmail.com">foab.nesa@gmail.com</a>.</p></noscript>
             <button class="btn btn-yellow btn-lg" type="submit">Send inquiry</button>
             <p class="form-status" role="status" aria-live="polite"></p>
           </form>
@@ -228,5 +262,6 @@
   </footer>
 
   <a class="call-bar" href="tel:+381641196048"><svg class="icon"><use href="#i-phone"/></svg>Call: +381 64 119 6048</a>
+  <script src="https://js.hcaptcha.com/1/api.js?recaptchacompat=off&amp;hl=en" async defer></script>
 </body>
 </html>

@@ -12,7 +12,9 @@ Static site for FOAB, a family forklift repair company, served at **foab.rs** fr
 - `python3 tests/check_site.py`: stdlib structural checks. These cover required markup, the form contract, SR/EN parity, local links and assets resolving, image sizes, no template or fake text, and robots/sitemap. Each `test_*` function is discovered automatically, so add new checks as functions in this file.
 - `tests/run_browser.sh tests/js.test.html`: tests for `js/main.js` in headless Chromium.
 - `BUDGET=60000 tests/run_browser.sh tests/overflow.html`: no horizontal overflow at 320/375/768/1280px on all four pages.
-- `python3 tools/export_brand.py`: regenerates every file in `img/brand/` from the mark geometry in that script. Edit the script, never the generated SVG/PNG files.
+- `python3 tools/export_brand.py`: regenerates every file in `img/brand/` and the root `favicon.ico` from the mark geometry in that script. Edit the script, never the generated SVG/PNG/ICO files.
+
+GitHub Pages runs Jekyll over the repo. `_config.yml` excludes README.md, CLAUDE.md, `docs/`, `tests/` and `tools/` so they aren't published as pages. `404.html` is served for any missing URL, so every path in it must be absolute.
 
 Chromium is a snap here, so it can only read and write under `$HOME`. Scratch output goes in `.superpowers/tmp/` (git-ignored), not `/tmp`.
 
@@ -27,6 +29,9 @@ Chromium is a snap here, so it can only read and write under `$HOME`. Scratch ou
   - With JS, `initForm` submits via `fetch`, drops the `redirect` field, disables the button while sending, and shows a message in `.form-status`. On error it keeps whatever the user typed.
   - Without JS, it is a normal POST that redirects to the thank-you page.
   - The real access key is in both pages, and `test_sr_form`/`test_en_parity` pin it. Messages go to foab.nesa@gmail.com.
+  - hCaptcha is enforced in the Web3Forms dashboard. The `.h-captcha` widget uses Web3Forms' shared sitekey, loaded directly from `js.hcaptcha.com`. `initForm` refuses to send while the captcha is unsolved (shows `data-msg-captcha`) and calls `hcaptcha.reset()` after every attempt, because tokens are single-use.
+  - Without JS the captcha can't be solved, so a `<noscript>` note points visitors to phone and email.
+  - The widget is a fixed-width iframe, which is why `.contact` and `.contact-form` use `minmax(0, 1fr)` columns and the widget is scaled below 380px.
 - **Progressive enhancement:** CSS only hides the phone menu under `html.js`, so the nav stays usable without JS. An inline `<head>` script sets that class before the stylesheet, so the menu doesn't flash open on phones. `initNav` also sets it.
 - **Phones (`max-width: 767px`)** get a fixed yellow `.call-bar` (`tel:` link), and `body` has a matching `padding-bottom` so the bar never covers content.
 - **The style is "bold and industrial":** black `#111111`, yellow `#F5B91B`, sand `#f4f3ef`, and hazard-stripe dividers (`--stripes`). Yellow is never used as text on a light background. Use `--yellow-dark` there instead.
