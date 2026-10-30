@@ -96,6 +96,23 @@ def test_no_angular_left():
         check(not os.path.exists(path(rel)), f"{rel} should be removed")
 
 
+BRAND_SVGS = ["logo.svg", "logo-light.svg", "icon.svg", "favicon.svg"]
+
+
+def test_brand_svgs():
+    for name in BRAND_SVGS:
+        src = load(f"img/brand/{name}")
+        check("<text" not in src, f"{name}: lettering must be outlined paths, not <text>")
+        check("viewBox=" in src, f"{name}: missing viewBox")
+
+
+def test_brand_pngs():
+    from PIL import Image
+    for name, size in {"favicon-32.png": (32, 32), "apple-touch-icon.png": (180, 180), "og-image.png": (1200, 630)}.items():
+        with Image.open(path(f"img/brand/{name}")) as im:
+            check(im.size == size, f"{name}: expected {size}, got {im.size}")
+
+
 def main():
     tests = [(n, f) for n, f in globals().items() if n.startswith("test_") and callable(f)]
     failed = 0
