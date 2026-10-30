@@ -113,6 +113,140 @@ def test_brand_pngs():
             check(im.size == size, f"{name}: expected {size}, got {im.size}")
 
 
+TEL = "tel:+381641196048"
+MAP_SRC = ("https://www.google.com/maps/embed/v1/place?key=AIzaSyBG0WZ9O3HYuaW35LKTOOWRJpnlg19hLuI"
+           "&q=Cara+Du%C5%A1ana+58%2C+22324+Be%C5%A1ka%2C+Serbia")
+SECTIONS = ["usluge", "o-nama", "kontakt"]
+FIELDS = {"ime": True, "firma": False, "kontakt": True, "poruka": True}
+HTML_PAGES = ["index.html", "hvala.html", "en/index.html", "en/thank-you.html"]
+
+
+def meta(doc, **attrs):
+    el = doc.find("meta", **attrs)
+    return el["attrs"].get("content", "") if el else ""
+
+
+def page_basics(rel, lang, other_lang, other_href):
+    d = parse(rel)
+    check(d.find("html")["attrs"].get("lang") == lang, f"{rel}: lang should be {lang}")
+    check("FOAB" in d.find("title")["text"], f"{rel}: title should mention FOAB")
+    check(meta(d, name="description"), f"{rel}: missing meta description")
+    check(meta(d, name="viewport"), f"{rel}: missing viewport")
+    check(d.find("link", rel="alternate", hreflang=other_lang, href=other_href), f"{rel}: missing hreflang {other_lang}")
+    check(d.find("link", rel="alternate", hreflang=lang), f"{rel}: missing self hreflang")
+    for prop in ("og:title", "og:description"):
+        check(meta(d, property=prop), f"{rel}: missing {prop}")
+    check(meta(d, property="og:image") == "https://foab.rs/img/brand/og-image.png", f"{rel}: og:image")
+    check(d.find("link", rel="icon", href="/img/brand/favicon.svg"), f"{rel}: missing svg favicon")
+    check(d.find("link", rel="apple-touch-icon"), f"{rel}: missing apple-touch-icon")
+    return d
+
+
+def form_checks(rel, subject, redirect):
+    d = parse(rel)
+    form = d.find("form", id="contact-form")
+    check(form, f"{rel}: no #contact-form")
+    a = form["attrs"]
+    check(a.get("action") == "https://api.web3forms.com/submit" and a.get("method", "").upper() == "POST", f"{rel}: form action/method")
+    for k in ("data-msg-sending", "data-msg-success", "data-msg-error"):
+        check(a.get(k), f"{rel}: form needs non-empty {k}")
+    hidden = {e["attrs"].get("name"): e["attrs"].get("value") for e in d.find_all("input", type="hidden")}
+    check("access_key" in hidden, f"{rel}: access_key missing")
+    check(hidden.get("subject") == subject, f"{rel}: subject should be {subject!r}")
+    check(hidden.get("from_name") == "FOAB sajt", f"{rel}: from_name")
+    check(hidden.get("redirect") == redirect, f"{rel}: redirect should be {redirect}")
+    check(d.find("input", type="checkbox", name="botcheck"), f"{rel}: botcheck honeypot missing")
+    for name, required in FIELDS.items():
+        el = d.find("textarea" if name == "poruka" else "input", name=name)
+        check(el, f"{rel}: field {name} missing")
+        check(("required" in el["attrs"]) == required, f"{rel}: field {name} required={required}")
+        check(el["attrs"].get("id") and d.find("label", for_=el["attrs"]["id"]), f"{rel}: field {name} needs a label")
+    check(d.has_class("form-status"), f"{rel}: .form-status missing")
+    return d
+
+
+def test_sr_basics():
+    page_basics("index.html", "sr", "en", "https://foab.rs/en/")
+
+
+def test_sr_phone():
+    d = parse("index.html")
+    check(len(d.find_all("a", href=TEL)) >= 3, "index.html: need >=3 tel links")
+    check("064 119 6048" in load("index.html"), "index.html: display phone missing")
+    check(d.has_class("call-bar") and d.has_class("call-bar")[0]["attrs"].get("href") == TEL, "call bar must be a tel link")
+
+
+def test_sr_sections():
+    d = parse("index.html")
+    for s in SECTIONS:
+        check(d.find(id=s), f"index.html: section #{s} missing")
+        nav = d.find("nav", id="site-nav")
+        check(nav is not None, "nav#site-nav missing")
+    hrefs = {e["attrs"].get("href") for e in d.find_all("a")}
+    for s in SECTIONS:
+        check(f"#{s}" in hrefs, f"index.html: nav link #{s} missing")
+    check(d.find("button", aria_controls="site-nav"), "nav toggle missing")
+    check(d.find("a", href="/en/", hreflang="en"), "lang switch to /en/ missing")
+
+
+def test_sr_form():
+    form_checks("index.html", "Novi upit sa sajta foab.rs", "https://foab.rs/hvala.html")
+
+
+def map_check(rel):
+    d = parse(rel)
+    frames = d.find_all("iframe")
+    check(len(frames) == 1, f"{rel}: expected one iframe")
+    a = frames[0]["attrs"]
+    check(a.get("src") == MAP_SRC, f"{rel}: map src mismatch: {a.get('src')}")
+    check(a.get("loading") == "lazy" and a.get("title"), f"{rel}: map needs loading=lazy and title")
+    check("width" not in a, f"{rel}: map iframe must not have a fixed width")
+
+
+def test_sr_map():
+    map_check("index.html")
+
+
+def jsonld(rel):
+    d = parse(rel)
+    s = d.find("script", type="application/ld+json")
+    check(s, f"{rel}: JSON-LD missing")
+    data = json.loads(s["text"])
+    check(data["@type"] == "LocalBusiness", "@type")
+    check(data["telephone"] == "+381641196048", "telephone")
+    check(data["email"] == "foab.nesa@gmail.com", "email")
+    addr = data["address"]
+    check(addr["streetAddress"] == "Cara Dušana 58" and addr["addressLocality"] == "Beška" and addr["postalCode"] == "22324", "address")
+    check(data["areaServed"] == "Serbia", "areaServed")
+
+
+def test_sr_jsonld():
+    jsonld("index.html")
+
+
+def test_no_fake_or_template_text():
+    for rel in HTML_PAGES:
+        if not os.path.exists(path(rel)):
+            continue
+        low = load(rel).lower()
+        for bad in ("lorem", "speeds up development", "06x", "xxx"):
+            check(bad not in low, f"{rel}: contains {bad!r}")
+
+
+def test_call_bar_padding():
+    css = load("css/style.css")
+    blocks = re.findall(r"@media\s*\(max-width:\s*767px\)\s*\{(.*?)\n\}", css, re.S)
+    check(blocks, "no @media (max-width: 767px) block")
+    check(any(re.search(r"body\s*\{[^}]*padding-bottom", b) for b in blocks), "body padding-bottom missing in phone media block")
+
+
+def test_hvala():
+    d = parse("hvala.html")
+    check(d.find("html")["attrs"].get("lang") == "sr", "hvala lang")
+    check(d.find("a", href="/"), "hvala: link back to /")
+    check(d.find("a", href=TEL), "hvala: phone link")
+
+
 def main():
     tests = [(n, f) for n, f in globals().items() if n.startswith("test_") and callable(f)]
     failed = 0
