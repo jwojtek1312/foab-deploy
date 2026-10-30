@@ -1,27 +1,78 @@
-# FoabWebpages
+# FOAB website (foab.rs)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.2.3.
+The website for FOAB, a family forklift repair company. It's plain HTML, CSS and JavaScript, so there's no build step and no npm. It comes in two languages: Serbian at `/` and English at `/en/`.
 
-## Development server
+## Preview locally
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+```bash
+python3 -m http.server 8000
+# open http://localhost:8000
+```
 
-## Code scaffolding
+The Google Map stays blank when previewing locally. Its API key only works on foab.rs.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Run the checks
 
-## Build
+```bash
+python3 tests/check_site.py                       # markup, links, assets, SR/EN parity
+tests/run_browser.sh tests/js.test.html           # menu, language switch, contact form
+BUDGET=60000 tests/run_browser.sh tests/overflow.html   # no sideways scrolling at 320–1280px
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+The browser tests need Chromium (`chromium` on the PATH, or set `CHROME=/path/to/chrome`).
 
-## Running unit tests
+## Going live (one-time)
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+The live site still serves the old Angular build from the `gh-pages` branch until you switch it:
 
-## Running end-to-end tests
+1. Merge this work into `master`.
+2. Go to GitHub → repository **Settings → Pages**. Set **Source** to "Deploy from a branch", choose branch `master` and folder `/ (root)`, then save.
+3. On the same page, check that the custom domain is `foab.rs` and turn on **Enforce HTTPS**. The `CNAME` file in the repo keeps the domain set from now on.
+4. When the new site is live, you can delete the old `gh-pages` branch.
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+After that, every push to `master` updates the site within a minute or two.
 
-## Further help
+## Contact form setup (Web3Forms)
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+The form sends messages to **foab.nesa@gmail.com** through [Web3Forms](https://web3forms.com), which is free for up to 250 messages a month. The access key is already in the `access_key` field of both `index.html` and `en/index.html`. The key is meant to be public, so it's fine for it to be in the HTML.
+
+After going live, send a test message from the site in each language and check that it arrives. To change the recipient, create a new key at web3forms.com and replace it in both pages.
+
+## Google Maps key
+
+The map uses the Maps Embed API, which is free. Its key is visible in the HTML, so it should only work on your domain. In Google Cloud Console → **APIs & Services → Credentials**, open the key and set:
+
+- **Application restrictions:** Websites, with `foab.rs/*` and `*.foab.rs/*`
+- **API restrictions:** Maps Embed API only
+
+The current key is restricted to foab.rs. That's why the map is blank in a local preview.
+
+## Swapping in real photos
+
+The photos in `img/` are temporary placeholders from Wikimedia Commons. To replace one:
+
+1. Save your photo **under the same file name**: `hero.webp`, `service-forklift.webp`, `service-rental.webp`, `service-tractor.webp` or `about.webp`.
+   - Hero: 1920×1080. Cards: 800×533. About: 1000×750.
+   - Keep each file under about 200 KB. Any image editor can export WebP; https://squoosh.app works in the browser.
+2. Remove that photo's credit from the footer of both pages and from `img/CREDITS.md`.
+
+## Still to fill in
+
+Search for `TODO(owner)` in `index.html` and `en/index.html`. Change both languages each time:
+
+- [ ] Working days (hours are shown as 8–18 h; add the days once the family confirms)
+- [ ] Forklift types and brands you service (forklift repair card)
+- [ ] The family story (O nama section)
+- [ ] Real photos, and removing the placeholder credits
+
+## Layout of the repo
+
+| Path | What it is |
+|---|---|
+| `index.html`, `en/index.html` | The two language versions of the page |
+| `hvala.html`, `en/thank-you.html` | Thank-you pages for when JavaScript is off |
+| `css/style.css` | All styles |
+| `js/main.js` | Mobile menu, language switch, contact form |
+| `img/brand/` | Logo, favicon, share image (made by `tools/export_brand.py`) |
+| `tests/` | Automated checks |
+| `docs/superpowers/` | Design spec and implementation plan |
