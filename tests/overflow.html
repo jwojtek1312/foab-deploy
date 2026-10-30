@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Horizontal overflow check</title></head>
+<body>
+  <pre id="result"></pre>
+  <script type="module">
+    // Loads each page in a same-origin iframe at fixed widths and checks nothing scrolls sideways.
+    const PAGES = ["/", "/en/", "/hvala.html", "/en/thank-you.html"];
+    const WIDTHS = [320, 375, 768, 1280];
+    const out = [];
+
+    function load(src, width) {
+      return new Promise((resolve) => {
+        const frame = document.createElement("iframe");
+        frame.style.cssText = `width:${width}px;height:900px;border:0;position:absolute;left:-10000px`;
+        frame.src = src;
+        document.body.appendChild(frame);
+        // Don't wait for the full load event: third-party iframes (Google Maps) can hold it open.
+        // Layout only needs the DOM and the render-blocking stylesheet.
+        const poll = () => {
+          const state = frame.contentDocument?.readyState;
+          if (state === "interactive" || state === "complete") setTimeout(() => resolve(frame), 300);
+          else setTimeout(poll, 50);
+        };
+        setTimeout(poll, 50);
+      });
+    }
+
+    for (const page of PAGES) {
+      for (const width of WIDTHS) {
+        const frame = await load(page, width);
+        const doc = frame.contentDocument;
+        const sw = doc.documentElement.scrollWidth;
+        const cw = doc.documentElement.clientWidth;
+        if (sw > cw) {
+          const wide = [...doc.querySelectorAll("body *")]
+            .filter((el) => el.getBoundingClientRect().right > cw + 1)
+            .slice(0, 3)
+            .map((el) => el.tagName.toLowerCase() + (el.className ? "." + String(el.className).split(" ")[0] : ""));
+          out.push(`FAIL: ${page}@${width} scrollWidth=${sw} clientWidth=${cw} (${wide.join(", ")})`);
+        } else {
+          out.push(`ok ${page}@${width}`);
+        }
+        frame.remove();
+      }
+    }
+    const failed = out.filter((l) => l.startsWith("FAIL")).length;
+    if (!failed) out.push("PASS " + out.length);
+    document.getElementById("result").textContent = out.join("\n");
+  </script>
+</body>
+</html>

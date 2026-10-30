@@ -19,7 +19,7 @@ for _ in $(seq 50); do
 done
 
 dom="$("$chrome" --headless=new --disable-gpu --no-first-run --no-default-browser-check \
-  --virtual-time-budget=10000 --dump-dom "http://127.0.0.1:$port/$page" 2>/dev/null)"
+  --virtual-time-budget="${BUDGET:-10000}" --dump-dom "http://127.0.0.1:$port/$page" 2>/dev/null)"
 
 result="$(printf '%s' "$dom" | python3 -c '
 import sys, re, html

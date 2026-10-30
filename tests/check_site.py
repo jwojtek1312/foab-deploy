@@ -293,6 +293,16 @@ def test_photo_credits_visible():
             check(artist in block[0]["text"], f"{rel}: credit for {artist} missing")
 
 
+def test_robots_sitemap():
+    check("Sitemap: https://foab.rs/sitemap.xml" in load("robots.txt"), "robots.txt must reference the sitemap")
+    sm = load("sitemap.xml")
+    for url in ("https://foab.rs/", "https://foab.rs/en/"):
+        check(f"<loc>{url}</loc>" in sm, f"sitemap missing {url}")
+        check(f'hreflang="sr" href="https://foab.rs/"' in sm and f'hreflang="en" href="https://foab.rs/en/"' in sm, "sitemap alternates")
+    import xml.dom.minidom
+    xml.dom.minidom.parseString(sm)  # must be well-formed
+
+
 def test_assets_resolve():
     for rel in HTML_PAGES:
         d = parse(rel)
