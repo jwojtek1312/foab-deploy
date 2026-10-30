@@ -24,7 +24,8 @@ dom="$("$chrome" --headless=new --disable-gpu --no-first-run --no-default-browse
 result="$(printf '%s' "$dom" | python3 -c '
 import sys, re, html
 m = re.search(r"<pre id=\"result\"[^>]*>(.*?)</pre>", sys.stdin.read(), re.S)
-print(html.unescape(m.group(1)).strip() if m else "FAIL: no #result element found")
+text = html.unescape(m.group(1)).strip() if m else "FAIL: no #result element found"
+print(text or "FAIL: empty #result (script error or failed import?)")
 ')"
 
 echo "$result"

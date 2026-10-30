@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="sr">
+<head><meta charset="utf-8"><title>js/main.js tests</title></head>
+<body>
+  <header class="site-header">
+    <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">menu</button>
+    <nav id="site-nav"><a href="#usluge">Usluge</a></nav>
+    <a class="lang-switch" href="/en/">EN</a>
+  </header>
+  <form id="contact-form" action="https://api.web3forms.com/submit" method="POST"
+        data-msg-sending="SENDING" data-msg-success="SUCCESS" data-msg-error="ERROR">
+    <input type="hidden" name="access_key" value="KEY">
+    <input type="hidden" name="redirect" value="https://foab.rs/hvala.html">
+    <input name="ime" value="Pera">
+    <textarea name="poruka"></textarea>
+    <button type="submit">Send</button>
+    <p class="form-status"></p>
+  </form>
+  <pre id="result"></pre>
+
+  <script type="module">
+    import { initNav, initForm, initLangSwitch } from "../js/main.js";
+
+    const out = [];
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    const form = document.getElementById("contact-form");
+    const button = form.querySelector("button");
+    const status = form.querySelector(".form-status");
+    const header = document.querySelector(".site-header");
+    const toggle = document.querySelector(".nav-toggle");
+
+    function assert(cond, msg) { if (!cond) throw new Error(msg); }
+
+    // initForm attaches a listener each call; give each test its own fresh form clone.
+    function freshForm(fetchImpl) {
+      const clone = document.getElementById("contact-form").cloneNode(true);
+      document.getElementById("contact-form").replaceWith(clone);
+      initForm(clone, fetchImpl);
+      return clone;
+    }
+    const submit = (f) => f.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+    const ok = (body) => Promise.resolve({ ok: true, json: () => Promise.resolve(body) });
+
+    const tests = {
+      async test_nav_toggle() {
+        initNav(document);
+        assert(document.documentElement.classList.contains("js"), "html.js not set");
+        toggle.click();
+        assert(header.classList.contains("open"), "not open after click");
+        assert(toggle.getAttribute("aria-expanded") === "true", "aria-expanded not true");
+        toggle.click();
+        assert(!header.classList.contains("open"), "still open after 2nd click");
+        assert(toggle.getAttribute("aria-expanded") === "false", "aria-expanded not false");
+      },
+      async test_nav_escape_closes() {
+        toggle.click();
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        assert(!header.classList.contains("open"), "Escape did not close");
+        assert(toggle.getAttribute("aria-expanded") === "false", "aria-expanded not reset");
+      },
+      async test_nav_link_closes() {
+        toggle.click();
+        document.querySelector("#site-nav a").click();
+        assert(!header.classList.contains("open"), "nav link click did not close");
+      },
+      async test_lang_switch_keeps_section() {
+        const link = document.querySelector(".lang-switch");
+        initLangSwitch(document);
+        link.addEventListener("click", (e) => e.preventDefault());
+        history.replaceState(null, "", "#kontakt");
+        link.click();
+        assert(link.getAttribute("href") === "/en/#kontakt", "href was " + link.getAttribute("href"));
+        history.replaceState(null, "", "#usluge");
+        link.click();
+        assert(link.getAttribute("href") === "/en/#usluge", "hash not replaced: " + link.getAttribute("href"));
+        history.replaceState(null, "", location.pathname);
+      },
+      async test_submit_success() {
+        const f = freshForm(() => ok({ success: true }));
+        f.querySelector("[name=poruka]").value = "Viljuškar ne radi";
+        submit(f);
+        await tick(); await tick();
+        const s = f.querySelector(".form-status");
+        assert(s.textContent === "SUCCESS", "status was " + s.textContent);
+        assert(s.classList.contains("is-success"), "no is-success class");
+        assert(f.querySelector("[name=poruka]").value === "", "form not reset");
+        assert(!f.querySelector("button").disabled, "button still disabled");
+      },
+      async test_submit_error_keeps_input() {
+        const f = freshForm(() => Promise.reject(new TypeError("offline")));
+        f.querySelector("[name=poruka]").value = "Hitno";
+        submit(f);
+        await tick(); await tick();
+        const s = f.querySelector(".form-status");
+        assert(s.textContent === "ERROR", "status was " + s.textContent);
+        assert(s.classList.contains("is-error"), "no is-error class");
+        assert(f.querySelector("[name=poruka]").value === "Hitno", "input lost");
+        assert(!f.querySelector("button").disabled, "button still disabled");
+      },
+      async test_submit_api_failure() {
+        const f = freshForm(() => ok({ success: false, message: "Invalid access key" }));
+        submit(f);
+        await tick(); await tick();
+        assert(f.querySelector(".form-status").textContent === "ERROR", "api failure not shown as error");
+      },
+      async test_submit_http_error() {
+        const f = freshForm(() => Promise.resolve({ ok: false, json: () => Promise.reject(new SyntaxError("not json")) }));
+        submit(f);
+        await tick(); await tick();
+        assert(f.querySelector(".form-status").textContent === "ERROR", "http error not shown as error");
+      },
+      async test_sending_state() {
+        const f = freshForm(() => new Promise(() => {}));
+        submit(f);
+        assert(f.querySelector("button").disabled, "button not disabled while sending");
+        assert(f.querySelector(".form-status").textContent === "SENDING", "sending message not shown");
+      },
+      async test_no_double_submit() {
+        let calls = 0;
+        const f = freshForm(() => { calls++; return new Promise(() => {}); });
+        submit(f); submit(f);
+        await tick();
+        assert(calls === 1, "fetch called " + calls + " times");
+      },
+      async test_redirect_not_sent() {
+        let sent;
+        const f = freshForm((url, opts) => { sent = opts; return ok({ success: true }); });
+        submit(f);
+        await tick();
+        assert(sent.method === "POST", "method " + sent.method);
+        assert(sent.headers.Accept === "application/json", "Accept header missing");
+        assert(!sent.body.has("redirect"), "redirect was sent");
+        assert(sent.body.get("access_key") === "KEY", "access_key not sent");
+      },
+    };
+
+    for (const [name, fn] of Object.entries(tests)) {
+      try { await fn(); out.push("ok " + name); }
+      catch (e) { out.push("FAIL: " + name + ": " + e.message); }
+    }
+    const failed = out.filter((l) => l.startsWith("FAIL")).length;
+    if (!failed) out.push("PASS " + out.length);
+    document.getElementById("result").textContent = out.join("\n");
+  </script>
+</body>
+</html>
