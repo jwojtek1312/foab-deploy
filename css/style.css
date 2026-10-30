@@ -280,3 +280,6 @@ p { margin: 0 0 1em; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
 }
+
+.photo-credits { flex-basis: 100%; margin: 0; font-size: .75rem; color: #8a8a8a; }
+.photo-credits a { color: inherit; }

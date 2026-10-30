@@ -247,6 +247,69 @@ def test_hvala():
     check(d.find("a", href=TEL), "hvala: phone link")
 
 
+def test_en_parity():
+    page_basics("en/index.html", "en", "sr", "https://foab.rs/")
+    sr, en = parse("index.html"), parse("en/index.html")
+    for s in SECTIONS:
+        check(en.find(id=s), f"en: section #{s} missing (ids must match SR)")
+    check(len(en.find_all("a", href=TEL)) == len(sr.find_all("a", href=TEL)), "en: tel link count differs from SR")
+    check("+381 64 119 6048" in load("en/index.html"), "en: display phone missing")
+    check(en.find("a", href="/", hreflang="sr"), "en: lang switch to / missing")
+    check(en.has_class("call-bar"), "en: call bar missing")
+    check(en.find("header", data_site=True), "en: header needs data-site for JS")
+    form_checks("en/index.html", "New inquiry from foab.rs", "https://foab.rs/en/thank-you.html")
+    map_check("en/index.html")
+    jsonld("en/index.html")
+    d = parse("en/thank-you.html")
+    check(d.find("html")["attrs"].get("lang") == "en", "thank-you lang")
+    check(d.find("a", href="/en/"), "thank-you: link back to /en/")
+    check(d.find("a", href=TEL), "thank-you: phone link")
+
+
+IMAGES = ["hero", "service-forklift", "service-rental", "service-tractor", "about"]
+
+
+def test_images():
+    credits = load("img/CREDITS.md")
+    for name in IMAGES:
+        rel = f"img/{name}.webp"
+        check(os.path.exists(path(rel)), f"{rel} missing")
+        check(os.path.getsize(path(rel)) <= 200 * 1024, f"{rel} over 200 KB")
+        check(f"{name}.webp" in credits, f"{rel} not listed in CREDITS.md")
+    for rel in ("index.html", "en/index.html"):
+        for img in parse(rel).find_all("img"):
+            a = img["attrs"]
+            check("alt" in a and a.get("width") and a.get("height"), f"{rel}: <img src={a.get('src')}> needs alt, width, height")
+
+
+def test_photo_credits_visible():
+    # CC BY / BY-SA placeholder photos must be attributed on the page itself while they are in use.
+    credits = load("img/CREDITS.md")
+    artists = re.findall(r"\" by (.+?), CC", credits)
+    for rel in ("index.html", "en/index.html"):
+        block = parse(rel).has_class("photo-credits")
+        check(block, f"{rel}: .photo-credits missing")
+        for artist in artists:
+            check(artist in block[0]["text"], f"{rel}: credit for {artist} missing")
+
+
+def test_assets_resolve():
+    for rel in HTML_PAGES:
+        d = parse(rel)
+        for el in d.elements:
+            for attr in ("src", "href"):
+                url = el["attrs"].get(attr, "")
+                if not url or url.startswith(("http", "mailto:", "tel:", "#", "data:")):
+                    continue
+                target = url.split("#")[0]
+                if not target:
+                    continue
+                fs = path(target.lstrip("/")) if target.startswith("/") else os.path.join(os.path.dirname(path(rel)), target)
+                if fs.endswith("/") or os.path.isdir(fs):
+                    fs = os.path.join(fs, "index.html")
+                check(os.path.exists(fs), f"{rel}: {attr}={url} does not resolve")
+
+
 def main():
     tests = [(n, f) for n, f in globals().items() if n.startswith("test_") and callable(f)]
     failed = 0
