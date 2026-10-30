@@ -114,7 +114,7 @@ def test_brand_pngs():
 
 
 TEL = "tel:+381641196048"
-MAP_SRC = ("https://www.google.com/maps/embed/v1/place?key=AIzaSyBG0WZ9O3HYuaW35LKTOOWRJpnlg19hLuI"
+MAP_SRC = ("https://www.google.com/maps/embed/v1/place?key=AIzaSyAg0Ia7fjTQmBfxA5rz2Mk3sf_Knqtiguo"
            "&q=Cara+Du%C5%A1ana+58%2C+22324+Be%C5%A1ka%2C+Serbia")
 SECTIONS = ["usluge", "o-nama", "kontakt"]
 FIELDS = {"ime": True, "firma": False, "kontakt": True, "poruka": True}
@@ -151,7 +151,7 @@ def form_checks(rel, subject, redirect):
     for k in ("data-msg-sending", "data-msg-success", "data-msg-error"):
         check(a.get(k), f"{rel}: form needs non-empty {k}")
     hidden = {e["attrs"].get("name"): e["attrs"].get("value") for e in d.find_all("input", type="hidden")}
-    check("access_key" in hidden, f"{rel}: access_key missing")
+    check(hidden.get("access_key") == "0ffe675e-1961-474c-b6b7-e6931ef29d6a", f"{rel}: access_key must be the real Web3Forms key")
     check(hidden.get("subject") == subject, f"{rel}: subject should be {subject!r}")
     check(hidden.get("from_name") == "FOAB sajt", f"{rel}: from_name")
     check(hidden.get("redirect") == redirect, f"{rel}: redirect should be {redirect}")
@@ -365,6 +365,13 @@ def test_photo_credits_licence_links():
             check(f"https://creativecommons.org/licenses/{lic}/" in block, f"{rel}: credits must link licence {lic}")
         check(("izmenjen" in block) if rel == "index.html" else ("modified" in block or "cropped" in block),
               f"{rel}: credits must say the photos were modified (cropped/resized)")
+
+
+def test_working_hours():
+    for rel, text in (("index.html", "Radno vreme: 8–18 h"), ("en/index.html", "Working hours: 8:00–18:00")):
+        src = load(rel)
+        check(text in src, f"{rel}: working hours {text!r} missing")
+        check("TODO(owner): add working hours" not in src, f"{rel}: stale working-hours TODO")
 
 
 def test_assets_resolve():

@@ -26,7 +26,7 @@ Chromium is a snap here, so it can only read and write under `$HOME`. Scratch ou
 - **The contact form** posts to Web3Forms (`https://api.web3forms.com/submit`).
   - With JS, `initForm` submits via `fetch`, drops the `redirect` field, disables the button while sending, and shows a message in `.form-status`. On error it keeps whatever the user typed.
   - Without JS, it is a normal POST that redirects to the thank-you page.
-  - The access key placeholder is `YOUR_WEB3FORMS_ACCESS_KEY`.
+  - The real access key is in both pages, and `test_sr_form`/`test_en_parity` pin it. Messages go to foab.nesa@gmail.com.
 - **Progressive enhancement:** CSS only hides the phone menu under `html.js`, so the nav stays usable without JS. An inline `<head>` script sets that class before the stylesheet, so the menu doesn't flash open on phones. `initNav` also sets it.
 - **Phones (`max-width: 767px`)** get a fixed yellow `.call-bar` (`tel:` link), and `body` has a matching `padding-bottom` so the bar never covers content.
 - **The style is "bold and industrial":** black `#111111`, yellow `#F5B91B`, sand `#f4f3ef`, and hazard-stripe dividers (`--stripes`). Yellow is never used as text on a light background. Use `--yellow-dark` there instead.

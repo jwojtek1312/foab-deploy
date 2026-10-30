@@ -34,13 +34,9 @@ After that, every push to `master` updates the site within a minute or two.
 
 ## Contact form setup (Web3Forms)
 
-The form sends messages to **foab.nesa@gmail.com** through [Web3Forms](https://web3forms.com), which is free for up to 250 messages a month.
+The form sends messages to **foab.nesa@gmail.com** through [Web3Forms](https://web3forms.com), which is free for up to 250 messages a month. The access key is already in the `access_key` field of both `index.html` and `en/index.html`. The key is meant to be public, so it's fine for it to be in the HTML.
 
-1. Go to https://web3forms.com, enter `foab.nesa@gmail.com` and create an access key. The key arrives by email.
-2. In **both** `index.html` and `en/index.html`, replace `YOUR_WEB3FORMS_ACCESS_KEY` with the key.
-3. Commit, push, and send a test message from the live site.
-
-The key is meant to be public, so it's fine for it to be in the HTML.
+After going live, send a test message from the site in each language and check that it arrives. To change the recipient, create a new key at web3forms.com and replace it in both pages.
 
 ## Google Maps key
 
@@ -49,7 +45,7 @@ The map uses the Maps Embed API, which is free. Its key is visible in the HTML, 
 - **Application restrictions:** Websites, with `foab.rs/*` and `*.foab.rs/*`
 - **API restrictions:** Maps Embed API only
 
-It already looks restricted, because it refuses requests from `localhost`. Check that `foab.rs` is on the list.
+The current key is restricted to foab.rs. That's why the map is blank in a local preview.
 
 ## Swapping in real photos
 
@@ -64,8 +60,7 @@ The photos in `img/` are temporary placeholders from Wikimedia Commons. To repla
 
 Search for `TODO(owner)` in `index.html` and `en/index.html`. Change both languages each time:
 
-- [ ] Web3Forms access key (see above)
-- [ ] Working hours (Kontakt section)
+- [ ] Working days (hours are shown as 8–18 h; add the days once the family confirms)
 - [ ] Forklift types and brands you service (forklift repair card)
 - [ ] The family story (O nama section)
 - [ ] Real photos, and removing the placeholder credits
